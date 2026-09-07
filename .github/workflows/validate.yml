@@ -48,9 +48,8 @@ jobs:
 
       - name: Check agents/openai.yaml has Use $ prompt
         run: |
-          if ! grep -q 'Use \$mermail-escrow-agent' \
-            skills/mermail-escrow-agent/agents/openai.yaml; then
-            echo "FAIL: agents/openai.yaml default_prompt must include 'Use \$mermail-escrow-agent'"
+          if ! grep -qF 'Use $mermail-escrow-agent' skills/mermail-escrow-agent/agents/openai.yaml; then
+            echo "FAIL: agents/openai.yaml default_prompt must include Use \$mermail-escrow-agent"
             exit 1
           fi
           echo "OK: agents/openai.yaml has correct default_prompt"
@@ -87,4 +86,4 @@ jobs:
         run: jq -e 'type == "array" and length >= 8' tests/scenarios.json
 
       - name: Check HTML demo page exists
-        run: test -f docs/index.html && echo "OK: docs/index.html present"
+        run: 'test -f docs/index.html && echo "OK: docs/index.html present"'
