@@ -1,0 +1,78 @@
+{
+  "$schema": "https://clawhub.ai/schemas/skill-manifest.v1.json",
+  "name": "mermail-escrow-agent",
+  "version": "1.0.0",
+  "display_name": "Mermail Escrow Agent",
+  "description": "Peer-to-peer deal escrow coordinated entirely over a Mermail email thread. The agent holds buyer funds in the Agent Wallet, monitors the same thread for the buyer's release phrase, and releases payment to the seller only after a fresh approval.",
+  "homepage": "https://eddyflores100-lang.github.io/mermail-escrow-agent/",
+  "repository": "https://github.com/eddyflores100-lang/mermail-escrow-agent",
+  "license": "MIT",
+  "author": {
+    "name": "eddyflores100-lang",
+    "url": "https://github.com/eddyflores100-lang"
+  },
+  "categories": [
+    "finance",
+    "payments",
+    "email",
+    "workflow",
+    "mermail"
+  ],
+  "tags": [
+    "mermail",
+    "escrow",
+    "agent-wallet",
+    "paybox",
+    "usdc",
+    "p2p",
+    "email-automation",
+    "mcp"
+  ],
+  "entry": "skills/mermail-escrow-agent/SKILL.md",
+  "agents": [
+    "openclaw",
+    "claude-code",
+    "cursor",
+    "codex",
+    "hermes"
+  ],
+  "dependencies": {
+    "mcp": [
+      {
+        "name": "mermail",
+        "transport": "streamable_http",
+        "url": "https://console.mermail.app/mcp",
+        "auth": "oauth",
+        "required_scopes": ["mcp:tools"]
+      }
+    ],
+    "env": [
+      {
+        "name": "MERMAIL_API_KEY",
+        "required": true,
+        "description": "Workspace API key for CLI/headless automation. PayBox still requires full-profile OAuth; the API key alone cannot authorise wallet writes."
+      }
+    ]
+  },
+  "capabilities": [
+    "hold-funds-in-agent-wallet",
+    "monitor-mermail-thread-for-release-phrase",
+    "release-funds-to-seller-on-buyer-confirmation",
+    "refund-buyer-on-deadline-or-dispute",
+    "send-receipt-email-with-tx-hash"
+  ],
+  "security": {
+    "treatsEmailAsUntrustedData": true,
+    "requiresFreshApprovalForEachPayBoxWrite": true,
+    "releasePhraseStoredAsSha256Hash": true,
+    "destinationImmutableFromEmail": true,
+    "neverLogsPrivateKeyOrSigningUrl": true,
+    "usesPayBoxSigningFlowNotPrepareDestructiveAction": true
+  },
+  "install": {
+    "openclaw": "clawhub install eddyflores100-lang/mermail-escrow-agent",
+    "claude-code": "claude plugin marketplace add https://github.com/eddyflores100-lang/mermail-escrow-agent && claude plugin install mermail-escrow-agent@mermail-escrow-agent",
+    "cursor": "ln -sfn /path/to/mermail-escrow-agent ~/.cursor/plugins/local/mermail-escrow-agent",
+    "generic": "cp -R skills/mermail-escrow-agent ~/.<agent>/skills/"
+  }
+}

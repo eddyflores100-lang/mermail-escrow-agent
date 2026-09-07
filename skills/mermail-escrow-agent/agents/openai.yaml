@@ -1,0 +1,11 @@
+interface:
+  display_name: "Mermail Escrow Agent"
+  short_description: "Hold buyer funds in Agent Wallet and release to the seller only after the buyer's email confirmation in the same Mermail thread."
+  default_prompt: "Use $mermail-escrow-agent to hold and release peer-to-peer deal funds over a Mermail email thread. The buyer supplies the deal envelope (amount, asset, chain, seller destination, deadline) in chat; the agent holds funds in the Agent Wallet, monitors the thread for the buyer's release phrase, and pays the seller only after a fresh release approval. Use for freelance work, used-gear sales, content commissions, or any small deal where two parties want escrow without a separate marketplace app. Do not use for one-shot payments, x402 micropayments, or vendor invoice payment."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "mermail"
+      description: "Mermail workspace, mailbox, email, and Agent Wallet / PayBox MCP server"
+      transport: "streamable_http"
+      url: "https://console.mermail.app/mcp"

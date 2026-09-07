@@ -1,0 +1,59 @@
+{
+  "name": "mermail-escrow-agent",
+  "version": "1.0.0",
+  "description": "Peer-to-peer deal escrow coordinated entirely over a Mermail email thread. Hold buyer funds in Agent Wallet, release to seller only after buyer email confirmation.",
+  "license": "MIT",
+  "homepage": "https://eddyflores100-lang.github.io/mermail-escrow-agent/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eddyflores100-lang/mermail-escrow-agent.git"
+  },
+  "bugs": {
+    "url": "https://github.com/eddyflores100-lang/mermail-escrow-agent/issues"
+  },
+  "keywords": [
+    "mermail",
+    "agent-skills",
+    "skill",
+    "escrow",
+    "agent-wallet",
+    "paybox",
+    "mcp",
+    "usdc",
+    "p2p",
+    "email",
+    "claude-code",
+    "cursor",
+    "codex",
+    "openclaw"
+  ],
+  "author": "eddyflores100-lang",
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "skills/",
+    "README.md",
+    "LICENSE",
+    "ARCHITECTURE.md"
+  ],
+  "skills": [
+    {
+      "name": "mermail-escrow-agent",
+      "path": "skills/mermail-escrow-agent",
+      "summary": "Peer-to-peer deal escrow over a Mermail email thread — hold buyer funds, release on buyer confirmation."
+    }
+  ],
+  "mermail": {
+    "skillType": "companion",
+    "composesToolsFrom": [
+      "mermail-agent-inbox",
+      "mermail-compose-email",
+      "mermail-agent-wallet"
+    ],
+    "ownsNewTools": false,
+    "requiresFullProfileOAuth": true,
+    "requiresPayBox": true,
+    "officialRepoPr": "https://github.com/Nudgen-Marketing/mermail-skills/pull/PLACEHOLDER"
+  }
+}

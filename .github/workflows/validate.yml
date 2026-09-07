@@ -1,0 +1,90 @@
+name: Validate skill
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Check SKILL.md line count (≤ 500)
+        run: |
+          LINES=$(wc -l < skills/mermail-escrow-agent/SKILL.md)
+          echo "SKILL.md has $LINES lines"
+          if [ "$LINES" -gt 500 ]; then
+            echo "FAIL: SKILL.md exceeds 500-line limit (AUTHORING.md rule)"
+            exit 1
+          fi
+
+      - name: Check no unresolved TODOs
+        run: |
+          if grep -rn 'TODO' skills/mermail-escrow-agent/; then
+            echo "FAIL: unresolved TODO found"
+            exit 1
+          fi
+          echo "OK: no unresolved TODOs"
+
+      - name: Check frontmatter name matches directory
+        run: |
+          DIR_NAME=$(basename skills/mermail-escrow-agent)
+          YAML_NAME=$(awk '/^---$/{n++; next} n==1 && /^name:/ {print $2; exit}' \
+            skills/mermail-escrow-agent/SKILL.md)
+          echo "dir=$DIR_NAME  name=$YAML_NAME"
+          if [ "$DIR_NAME" != "$YAML_NAME" ]; then
+            echo "FAIL: directory name ($DIR_NAME) does not match YAML name ($YAML_NAME)"
+            exit 1
+          fi
+
+      - name: Check agents/openai.yaml has Use $ prompt
+        run: |
+          if ! grep -q 'Use \$mermail-escrow-agent' \
+            skills/mermail-escrow-agent/agents/openai.yaml; then
+            echo "FAIL: agents/openai.yaml default_prompt must include 'Use \$mermail-escrow-agent'"
+            exit 1
+          fi
+          echo "OK: agents/openai.yaml has correct default_prompt"
+
+      - name: Check required reference docs exist
+        run: |
+          for f in tools.md workflows.md security.md; do
+            test -f "skills/mermail-escrow-agent/references/$f" || {
+              echo "FAIL: missing references/$f"; exit 1;
+            }
+          done
+          echo "OK: all reference docs present"
+
+      - name: Check Python scripts are syntactically valid
+        run: |
+          for f in skills/mermail-escrow-agent/scripts/*.py; do
+            python3 -m py_compile "$f" || {
+              echo "FAIL: $f has syntax errors"; exit 1;
+            }
+          done
+          echo "OK: all Python scripts compile"
+
+      - name: Smoke-test parse_deal.py
+        run: |
+          OUTPUT=$(python3 skills/mermail-escrow-agent/scripts/parse_deal.py \
+            --format json \
+            --text "I'll pay 50 USDC on BASE to 0x742d35Cc6634C0532925a3b844Bc9e7595f6E321")
+          echo "$OUTPUT" | jq -e '.amount_decimal == "50.00"' || {
+            echo "FAIL: parse_deal.py did not extract amount"; exit 1;
+          }
+          echo "OK: parse_deal.py works"
+
+      - name: Check scenarios.json is valid JSON
+        run: jq -e 'type == "array" and length >= 8' tests/scenarios.json
+
+      - name: Check HTML demo page exists
+        run: test -f docs/index.html && echo "OK: docs/index.html present"
