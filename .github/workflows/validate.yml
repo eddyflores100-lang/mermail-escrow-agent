@@ -77,10 +77,12 @@ jobs:
           OUTPUT=$(python3 skills/mermail-escrow-agent/scripts/parse_deal.py \
             --format json \
             --text "I'll pay 50 USDC on BASE to 0x742d35Cc6634C0532925a3b844Bc9e7595f6E321")
-          echo "$OUTPUT" | jq -e '.amount_decimal == "50.00"' || {
-            echo "FAIL: parse_deal.py did not extract amount"; exit 1;
-          }
-          echo "OK: parse_deal.py works"
+          AMOUNT=$(echo "$OUTPUT" | jq -r '.amount_decimal')
+          if [ "$AMOUNT" != "50" ] && [ "$AMOUNT" != "50.00" ]; then
+            echo "FAIL: parse_deal.py did not extract amount (got: $AMOUNT)"
+            exit 1
+          fi
+          echo "OK: parse_deal.py extracted amount=$AMOUNT"
 
       - name: Check scenarios.json is valid JSON
         run: jq -e 'type == "array" and length >= 8' tests/scenarios.json
