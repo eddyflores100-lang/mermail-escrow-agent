@@ -200,6 +200,198 @@
 
   /* Nav blur */
   nav { backdrop-filter: blur(16px); background: rgba(3, 16, 22, 0.75); }
+
+  /* ====== HOW IT WORKS — animated section ====== */
+  .tab-bar { display: flex; gap: 4px; padding: 4px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; }
+  .tab-btn {
+    flex: 1; padding: 10px 16px; border-radius: 7px; cursor: pointer;
+    font-size: 13px; font-weight: 600; color: var(--muted);
+    transition: all .2s ease; text-align: center;
+    font-family: 'JetBrains Mono', monospace; letter-spacing: 0.02em;
+  }
+  .tab-btn:hover { color: var(--text-2); }
+  .tab-btn.active {
+    background: linear-gradient(135deg, var(--teal) 0%, var(--teal-bright) 100%);
+    color: var(--bg);
+    box-shadow: 0 4px 16px -4px rgba(32, 185, 189, 0.5);
+  }
+
+  /* ---- Flow diagram (animated SVG) ---- */
+  .flow-stage {
+    position: relative; width: 100%; aspect-ratio: 16/9; min-height: 380px;
+    background: radial-gradient(ellipse at center, rgba(13,150,155,0.08), transparent 70%);
+    border-radius: 12px; overflow: hidden;
+  }
+  .flow-node {
+    position: absolute; display: flex; flex-direction: column; align-items: center; gap: 6px;
+    transition: all .4s cubic-bezier(.4,0,.2,1);
+  }
+  .flow-node-icon {
+    width: 64px; height: 64px; border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; position: relative;
+    border: 1.5px solid var(--border-2);
+    background: var(--panel);
+  }
+  .flow-node-label { font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+  .flow-node-sub { font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+  .flow-node.buyer .flow-node-icon { border-color: var(--teal-bright); background: linear-gradient(135deg, rgba(13,150,155,0.2), rgba(32,185,189,0.1)); }
+  .flow-node.buyer .flow-node-label { color: var(--teal-bright); }
+  .flow-node.agent .flow-node-icon { border-color: var(--gold); background: linear-gradient(135deg, rgba(247,201,92,0.2), rgba(247,201,92,0.05)); }
+  .flow-node.agent .flow-node-label { color: var(--gold); }
+  .flow-node.seller .flow-node-icon { border-color: var(--green); background: linear-gradient(135deg, rgba(114,227,228,0.15), rgba(114,227,228,0.05)); }
+  .flow-node.seller .flow-node-label { color: var(--green); }
+  .flow-node.active .flow-node-icon {
+    box-shadow: 0 0 0 3px rgba(32,185,189,0.3), 0 0 30px rgba(32,185,189,0.4);
+    transform: scale(1.08);
+  }
+  .flow-node.active.agent .flow-node-icon {
+    box-shadow: 0 0 0 3px rgba(247,201,92,0.3), 0 0 30px rgba(247,201,92,0.4);
+  }
+  .flow-node.active.seller .flow-node-icon {
+    box-shadow: 0 0 0 3px rgba(114,227,228,0.3), 0 0 30px rgba(114,227,228,0.4);
+  }
+
+  /* Flowing particles along the paths */
+  .flow-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .flow-path {
+    fill: none; stroke: var(--border-2); stroke-width: 2;
+    stroke-dasharray: 6 4; opacity: 0.5;
+  }
+  .flow-path.active {
+    stroke: var(--teal-bright); opacity: 1; stroke-width: 2.5;
+    animation: dash-flow 1s linear infinite;
+  }
+  .flow-path.active.gold { stroke: var(--gold); }
+  .flow-path.active.green { stroke: var(--green); }
+  @keyframes dash-flow { to { stroke-dashoffset: -20; } }
+
+  .flow-particle {
+    filter: drop-shadow(0 0 6px currentColor);
+  }
+
+  /* Email pulse envelope */
+  .email-pulse {
+    position: absolute; width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; opacity: 0;
+  }
+  .email-pulse.flying { animation: fly-along 2.5s ease-in-out infinite; }
+  @keyframes fly-along {
+    0% { opacity: 0; transform: translate(0,0) scale(0.5); }
+    10% { opacity: 1; transform: scale(1); }
+    90% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: translate(var(--dx),var(--dy)) scale(0.5); }
+  }
+
+  /* Wallet badge */
+  .wallet-badge {
+    position: absolute; top: -8px; right: -8px;
+    background: var(--gold); color: var(--bg);
+    font-size: 9px; font-weight: 900; padding: 2px 6px; border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    box-shadow: 0 2px 8px rgba(247,201,92,0.4);
+  }
+
+  /* ---- Phase explorer ---- */
+  .phase-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 20px; }
+  @media (max-width: 768px) { .phase-grid { grid-template-columns: repeat(4, 1fr); } }
+  .phase-chip {
+    padding: 10px 8px; border-radius: 8px; cursor: pointer;
+    background: var(--panel-2); border: 1px solid var(--border);
+    transition: all .2s ease; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .phase-chip:hover { border-color: var(--teal); transform: translateY(-2px); }
+  .phase-chip.active {
+    background: linear-gradient(135deg, rgba(13,150,155,0.25), rgba(32,185,189,0.1));
+    border-color: var(--teal-bright);
+    box-shadow: 0 4px 16px -4px rgba(32,185,189,0.4);
+  }
+  .phase-chip.done { border-color: var(--green-dim); }
+  .phase-chip.done::after {
+    content: '✓'; position: absolute; top: 3px; right: 5px;
+    color: var(--green); font-size: 10px; font-weight: 900;
+  }
+  .phase-chip-num { font-size: 18px; font-weight: 800; font-family: 'JetBrains Mono', monospace; color: var(--muted); }
+  .phase-chip.active .phase-chip-num { color: var(--teal-bright); }
+  .phase-chip-name { font-size: 9px; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; font-weight: 600; }
+
+  .phase-detail {
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px;
+    padding: 24px; min-height: 200px; position: relative; overflow: hidden;
+  }
+  .phase-detail::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--teal), var(--gold), transparent);
+  }
+  .phase-detail-num {
+    font-size: 64px; font-weight: 900; line-height: 1;
+    background: linear-gradient(135deg, var(--teal-bright), var(--gold));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .phase-detail-title { font-size: 22px; font-weight: 700; margin: 4px 0 6px; }
+  .phase-detail-desc { font-size: 14px; color: var(--text-2); line-height: 1.6; margin-bottom: 16px; }
+  .phase-tools { display: flex; flex-wrap: wrap; gap: 6px; }
+  .phase-tool {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    padding: 4px 10px; border-radius: 6px;
+    background: rgba(13,150,155,0.1); border: 1px solid rgba(13,150,155,0.3);
+    color: var(--teal-bright);
+  }
+  .phase-tool.gold { background: rgba(247,201,92,0.1); border-color: rgba(247,201,92,0.3); color: var(--gold); }
+
+  .phase-progress-bar {
+    height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; margin-bottom: 20px;
+  }
+  .phase-progress-fill {
+    height: 100%; background: linear-gradient(90deg, var(--teal), var(--gold));
+    transition: width .5s cubic-bezier(.4,0,.2,1);
+    box-shadow: 0 0 12px rgba(32,185,189,0.5);
+  }
+
+  /* ---- State machine (animated) ---- */
+  .state-machine { position: relative; width: 100%; padding: 20px 0; }
+  .state-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .state-node {
+    padding: 10px 18px; border-radius: 10px;
+    border: 1.5px solid var(--border-2); background: var(--panel-2);
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700;
+    color: var(--text-2); transition: all .4s ease;
+    position: relative; cursor: default;
+  }
+  .state-node.start { border-color: var(--muted); color: var(--muted); border-style: dashed; }
+  .state-node.draft { border-color: var(--muted); }
+  .state-node.armed { border-color: var(--teal); }
+  .state-node.held { border-color: var(--gold); }
+  .state-node.released { border-color: var(--green); }
+  .state-node.refunded { border-color: #a48bc4; }
+  .state-node.blocked { border-color: var(--red); }
+  .state-node.terminal { border-color: var(--muted); border-style: dashed; color: var(--muted); }
+  .state-node.active {
+    transform: scale(1.12);
+    box-shadow: 0 0 0 3px currentColor, 0 0 24px currentColor;
+    color: var(--text);
+  }
+  .state-node.active.draft { color: var(--muted); }
+  .state-node.active.armed { color: var(--teal-bright); }
+  .state-node.active.held { color: var(--gold); }
+  .state-node.active.released { color: var(--green); }
+  .state-node.active.refunded { color: #a48bc4; }
+  .state-node.active.blocked { color: var(--red); }
+  .state-arrow {
+    color: var(--muted); font-size: 18px; font-family: monospace;
+    transition: color .3s;
+  }
+  .state-arrow.lit { color: var(--teal-bright); text-shadow: 0 0 8px currentColor; }
+  .state-branch-label {
+    font-size: 9px; color: var(--muted); font-family: 'JetBrains Mono', monospace;
+    text-align: center; margin-top: 2px;
+  }
+
+  @keyframes fade-in-up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-in { animation: fade-in-up .4s ease; }
 </style>
 </head>
 <body class="antialiased">
@@ -421,84 +613,225 @@
   </div>
 </section>
 
-<!-- How it works -->
+<!-- How it works — animated -->
 <section id="how" class="max-w-7xl mx-auto px-6 py-20">
   <div class="section-heading">
     <h2 class="text-3xl font-bold mb-2">How it works</h2>
-    <p class="text-[var(--text-2)]">Two diagrams: the state machine the agent runs, and the threat model it defends against.</p>
+    <p class="text-[var(--text-2)]">Three views of the same workflow: an animated deal flow, an interactive phase explorer, and a live state machine.</p>
   </div>
 
-  <div class="grid lg:grid-cols-2 gap-6">
-    <div class="panel p-6">
-      <div class="flex items-center gap-2 mb-4">
-        <div class="w-7 h-7 rounded flex items-center justify-center text-xs font-bold mono" style="background: rgba(13,150,155,0.2); color: var(--teal-bright);">01</div>
-        <h3 class="text-lg font-semibold">State machine</h3>
-      </div>
-      <pre class="mermaid">
-stateDiagram-v2
-  [*] --> DRAFT: Buyer chat: deal envelope
-  DRAFT --> ARMED: get_paybox_connection = ACTIVE
-  ARMED --> HELD: Approve funding · paybox_request_transfer (hold)
-  HELD --> RELEASED: Buyer reply + sender verified + phrase match + fresh approve
-  HELD --> REFUNDED: Deadline passed OR buyer "refund" + fresh approve
-  HELD --> AMBIGUOUS: Two release candidates in one poll
-  HELD --> DISPUTE: Seller reply contains dispute keywords
-  HELD --> CANCELLED: Both parties reply "cancel"
-  AMBIGUOUS --> HELD: Buyer confirms canonical
-  AMBIGUOUS --> REFUNDED: Buyer chooses refund
-  DISPUTE --> HELD: Buyer chooses release
-  DISPUTE --> REFUNDED: Buyer chooses refund
-  RELEASED --> [*]: Receipt email sent
-  REFUNDED --> [*]: Receipt email sent
-      </pre>
-    </div>
+  <!-- Tab switcher -->
+  <div class="tab-bar mb-6 max-w-2xl mx-auto">
+    <div class="tab-btn active" data-tab="flow">⚡ Deal flow</div>
+    <div class="tab-btn" data-tab="phases">⬡ Phase explorer</div>
+    <div class="tab-btn" data-tab="states">◈ State machine</div>
+  </div>
 
+  <!-- ====== TAB 1: Animated deal flow ====== -->
+  <div id="tab-flow" class="tab-content">
     <div class="panel p-6">
-      <div class="flex items-center gap-2 mb-4">
-        <div class="w-7 h-7 rounded flex items-center justify-center text-xs font-bold mono" style="background: rgba(247,201,92,0.2); color: var(--gold);">02</div>
-        <h3 class="text-lg font-semibold">Threat model &amp; defenses</h3>
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <div class="text-sm font-semibold text-[var(--text)]">Funds &amp; emails flowing through the deal</div>
+          <div class="text-xs text-[var(--muted)] mono mt-1">Watch USDC leave the buyer, get held by the agent, then release to the seller — all triggered by an email reply.</div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="flow-play" class="btn btn-primary px-3 py-1.5 rounded-md text-xs">▶ auto-play</button>
+          <button id="flow-restart" class="btn btn-ghost px-3 py-1.5 rounded-md text-xs">↺ restart</button>
+        </div>
       </div>
-      <pre class="mermaid">
-flowchart LR
-  subgraph Attacks["Attack vectors"]
-    A1["Forge release"]
-    A2["Redirect payout"]
-    A3["Auto-refund forge"]
-    A4["Broaden scope"]
-    A5["Ambiguity flood"]
-  end
-  subgraph Defenses["Defenses"]
-    D1["Phrase hashing"]
-    D2["Sender auth check"]
-    D3["Destination immutable"]
-    D4["Fresh approval always"]
-    D5["Bounded read budget"]
-  end
-  A1 --> D2
-  A1 --> D1
-  A2 --> D3
-  A3 --> D4
-  A4 --> D3
-  A5 --> D5
-      </pre>
-      <div class="mt-4 grid grid-cols-1 gap-2 text-xs">
-        <div class="panel-2 p-2.5 flex items-center gap-2">
-          <span class="text-[var(--red)] mono">A1</span>
-          <span class="text-[var(--text-2)]">Forge release from seller's email</span>
-          <span class="text-[var(--muted)]">→</span>
-          <span class="text-[var(--teal-bright)] mono">D1+D2</span>
+
+      <div class="flow-stage" id="flow-stage">
+        <!-- SVG paths connecting the nodes -->
+        <svg class="flow-svg" viewBox="0 0 800 450" preserveAspectRatio="none">
+          <!-- buyer → agent (top arc, email + funds) -->
+          <path id="path-ba" class="flow-path" d="M 130 130 Q 400 60 670 130" />
+          <!-- agent → seller (bottom arc, funds release) -->
+          <path id="path-as" class="flow-path" d="M 670 180 Q 400 320 130 320" />
+          <!-- buyer → agent (return: receipt email) -->
+          <path id="path-ab" class="flow-path" d="M 670 150 Q 400 100 130 150" />
+        </svg>
+
+        <!-- Buyer node -->
+        <div class="flow-node buyer" id="node-buyer" style="left: 8%; top: 22%;">
+          <div class="flow-node-icon">👤
+            <div class="wallet-badge" id="buyer-badge" style="display:none;">125</div>
+          </div>
+          <div class="flow-node-label">Buyer</div>
+          <div class="flow-node-sub">buyer@example.com</div>
         </div>
-        <div class="panel-2 p-2.5 flex items-center gap-2">
-          <span class="text-[var(--red)] mono">A2</span>
-          <span class="text-[var(--text-2)]">Redirect payout via email</span>
-          <span class="text-[var(--muted)]">→</span>
-          <span class="text-[var(--teal-bright)] mono">D3</span>
+
+        <!-- Agent node (center top) -->
+        <div class="flow-node agent" id="node-agent" style="left: 42%; top: 8%;">
+          <div class="flow-node-icon">🛡️
+            <div class="wallet-badge" id="agent-badge" style="display:none;">+50</div>
+          </div>
+          <div class="flow-node-label">Agent</div>
+          <div class="flow-node-sub">mermail-escrow-agent</div>
         </div>
-        <div class="panel-2 p-2.5 flex items-center gap-2">
-          <span class="text-[var(--red)] mono">A3</span>
-          <span class="text-[var(--text-2)]">Trigger auto-refund from forged email</span>
-          <span class="text-[var(--muted)]">→</span>
-          <span class="text-[var(--teal-bright)] mono">D4</span>
+
+        <!-- Seller node -->
+        <div class="flow-node seller" id="node-seller" style="left: 76%; top: 22%;">
+          <div class="flow-node-icon">🏪
+            <div class="wallet-badge" id="seller-badge" style="display:none;">+50</div>
+          </div>
+          <div class="flow-node-label">Seller</div>
+          <div class="flow-node-sub">seller@example.com</div>
+        </div>
+
+        <!-- Mermail inbox (center bottom) -->
+        <div class="flow-node" id="node-inbox" style="left: 42%; top: 68%;">
+          <div class="flow-node-icon" style="border-color: var(--teal); background: linear-gradient(135deg, rgba(13,150,155,0.15), rgba(13,150,155,0.05));">📬</div>
+          <div class="flow-node-label" style="color: var(--teal);">Mermail inbox</div>
+          <div class="flow-node-sub">agent+escrow@mermail.app</div>
+        </div>
+
+        <!-- On-chain (right bottom) -->
+        <div class="flow-node" id="node-chain" style="left: 76%; top: 68%;">
+          <div class="flow-node-icon" style="border-color: var(--gold); background: linear-gradient(135deg, rgba(247,201,92,0.15), rgba(247,201,92,0.05));">⬡</div>
+          <div class="flow-node-label" style="color: var(--gold);">On-chain</div>
+          <div class="flow-node-sub">Base · USDC</div>
+        </div>
+
+        <!-- Live caption -->
+        <div class="absolute bottom-3 left-3 right-3 text-center">
+          <div id="flow-caption" class="inline-block px-4 py-2 rounded-lg text-xs mono" style="background: rgba(3,16,22,0.85); border: 1px solid var(--border-2); color: var(--text-2);">
+            Click "auto-play" to watch the deal flow end-to-end
+          </div>
+        </div>
+      </div>
+
+      <!-- Flow legend -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-5 text-xs">
+        <div class="panel-2 p-3 flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full" style="background: var(--teal-bright); box-shadow: 0 0 8px var(--teal-bright);"></span>
+          <div><div class="font-semibold text-[var(--text)]">Email</div><div class="text-[var(--muted)] mono text-[10px]">deal thread messages</div></div>
+        </div>
+        <div class="panel-2 p-3 flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full" style="background: var(--gold); box-shadow: 0 0 8px var(--gold);"></span>
+          <div><div class="font-semibold text-[var(--text)]">USDC hold</div><div class="text-[var(--muted)] mono text-[10px]">funds held in agent wallet</div></div>
+        </div>
+        <div class="panel-2 p-3 flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full" style="background: var(--green); box-shadow: 0 0 8px var(--green);"></span>
+          <div><div class="font-semibold text-[var(--text)]">USDC release</div><div class="text-[var(--muted)] mono text-[10px]">funds sent to seller</div></div>
+        </div>
+        <div class="panel-2 p-3 flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full" style="background: var(--teal); box-shadow: 0 0 8px var(--teal);"></span>
+          <div><div class="font-semibold text-[var(--text)]">Receipt</div><div class="text-[var(--muted)] mono text-[10px]">tx hash emailed to both</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== TAB 2: Phase explorer ====== -->
+  <div id="tab-phases" class="tab-content hidden">
+    <div class="panel p-6">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <div class="text-sm font-semibold text-[var(--text)]">7 phases, start to completion</div>
+          <div class="text-xs text-[var(--muted)] mono mt-1">Click any phase to see detail. Auto-play runs through all 7.</div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="phase-play" class="btn btn-primary px-3 py-1.5 rounded-md text-xs">▶ auto-play</button>
+          <button id="phase-prev" class="btn btn-ghost px-3 py-1.5 rounded-md text-xs">‹ prev</button>
+          <button id="phase-next" class="btn btn-ghost px-3 py-1.5 rounded-md text-xs">next ›</button>
+        </div>
+      </div>
+
+      <div class="phase-progress-bar">
+        <div class="phase-progress-fill" id="phase-progress-fill" style="width: 14%;"></div>
+      </div>
+
+      <div class="phase-grid" id="phase-grid">
+        <!-- phase chips injected by JS -->
+      </div>
+
+      <div class="phase-detail" id="phase-detail">
+        <!-- detail injected by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== TAB 3: State machine ====== -->
+  <div id="tab-states" class="tab-content hidden">
+    <div class="panel p-6">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <div class="text-sm font-semibold text-[var(--text)]">State machine — auto-cycling</div>
+          <div class="text-xs text-[var(--muted)] mono mt-1">The happy path lights up automatically. Hover any state to pause.</div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="state-play" class="btn btn-primary px-3 py-1.5 rounded-md text-xs">▶ play</button>
+          <button id="state-reset" class="btn btn-ghost px-3 py-1.5 rounded-md text-xs">↺ reset</button>
+        </div>
+      </div>
+
+      <div class="state-machine" id="state-machine">
+        <!-- Main happy path row -->
+        <div class="state-row" style="justify-content: center;">
+          <div class="state-node start" data-state="start">●</div>
+          <span class="state-arrow" data-arrow="start-draft">→</span>
+          <div class="state-node draft" data-state="draft">DRAFT</div>
+          <span class="state-arrow" data-arrow="draft-armed">→</span>
+          <div class="state-node armed" data-state="armed">ARMED</div>
+          <span class="state-arrow" data-arrow="armed-held">→</span>
+          <div class="state-node held" data-state="held">HELD</div>
+          <span class="state-arrow" data-arrow="held-released">→</span>
+          <div class="state-node released" data-state="released">RELEASED</div>
+          <span class="state-arrow" data-arrow="released-end">→</span>
+          <div class="state-node terminal" data-state="end">●</div>
+        </div>
+
+        <!-- Branch labels under HELD -->
+        <div class="state-row" style="justify-content: center; margin-top: 4px;">
+          <div style="width: 280px;"></div>
+          <div class="text-[10px] text-[var(--muted)] mono text-center" style="width: 80px;">↑ fresh approval</div>
+          <div style="width: 60px;"></div>
+          <div class="flex flex-col items-center gap-1">
+            <div class="text-[10px] text-[var(--gold)] mono">↗ release</div>
+          </div>
+        </div>
+
+        <!-- Branch row: HELD splits to REFUNDED, AMBIGUOUS, DISPUTE, BLOCKED -->
+        <div class="state-row" style="justify-content: center; margin-top: 12px;">
+          <div style="width: 380px;"></div>
+          <div class="flex flex-col items-center gap-1">
+            <span class="text-[var(--muted)] text-lg">↓</span>
+            <div class="state-node held" data-state="held2" style="opacity:0.5; pointer-events:none;">HELD</div>
+          </div>
+          <div style="width: 30px;"></div>
+          <div class="flex flex-col items-center gap-1">
+            <span class="text-[var(--muted)] text-lg">↘</span>
+            <div class="text-[10px] text-[var(--muted)] mono">deadline / dispute</div>
+          </div>
+        </div>
+
+        <div class="state-row" style="justify-content: center; margin-top: 8px;">
+          <div class="state-node refunded" data-state="refunded">REFUNDED</div>
+          <span class="state-arrow">·</span>
+          <div class="state-node blocked" data-state="blocked" style="border-style: dashed;">BLOCKED</div>
+          <span class="state-arrow">·</span>
+          <div class="state-node" data-state="ambiguous" style="border-color: var(--red); color: var(--red);">AMBIGUOUS</div>
+          <span class="state-arrow">·</span>
+          <div class="state-node" data-state="dispute" style="border-color: var(--red); color: var(--red);">DISPUTE</div>
+        </div>
+
+        <div class="state-row" style="justify-content: center; margin-top: 4px;">
+          <span class="state-arrow">→</span>
+          <div class="state-node terminal" data-state="end2">●</div>
+          <span style="width: 80px;"></span>
+          <span class="state-arrow">→</span>
+          <div class="state-node terminal" data-state="end3">●</div>
+        </div>
+
+        <!-- Legend -->
+        <div class="mt-6 pt-5 border-t border-[var(--border)] grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded border" style="border-color: var(--muted); background: transparent;"></span><span class="text-[var(--text-2)]">Draft / start</span></div>
+          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded border" style="border-color: var(--teal); background: rgba(13,150,155,0.2);"></span><span class="text-[var(--text-2)]">Armed (PayBox ready)</span></div>
+          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded border" style="border-color: var(--gold); background: rgba(247,201,92,0.2);"></span><span class="text-[var(--text-2)]">Held (funds locked)</span></div>
+          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded border" style="border-color: var(--green); background: rgba(114,227,228,0.2);"></span><span class="text-[var(--text-2)]">Released (success)</span></div>
+          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded border" style="border-color: #a48bc4; background: rgba(164,139,196,0.2);"></span><span class="text-[var(--text-2)]">Refunded</span></div>
+          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded border" style="border-color: var(--red); background: rgba(239,107,107,0.2);"></span><span class="text-[var(--text-2)]">Blocked / dispute</span></div>
         </div>
       </div>
     </div>
@@ -992,6 +1325,229 @@ document.getElementById('btn-attack').addEventListener('click', attack);
 document.getElementById('btn-reset').addEventListener('click', reset);
 
 reset();
+
+// ====== HOW IT WORKS — tab switcher ======
+const tabBtns = document.querySelectorAll('.tab-btn');
+const tabContents = {
+  flow: document.getElementById('tab-flow'),
+  phases: document.getElementById('tab-phases'),
+  states: document.getElementById('tab-states'),
+};
+tabBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    tabBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    Object.values(tabContents).forEach(c => c.classList.add('hidden'));
+    tabContents[btn.dataset.tab].classList.remove('hidden');
+  });
+});
+
+// ====== TAB 1: Animated deal flow ======
+const flowSteps = [
+  { caption: '① Buyer sends deal envelope in chat', activate: ['buyer'], paths: [], duration: 1800 },
+  { caption: '② Agent probes PayBox — get_paybox_connection = ACTIVE', activate: ['buyer','agent'], paths: ['path-ba'], duration: 1800 },
+  { caption: '③ Agent resolves mailbox + thread, takes baseline read', activate: ['agent','inbox'], paths: ['path-ba'], duration: 1800 },
+  { caption: '④ Buyer approves funding — USDC held in Agent Wallet', activate: ['buyer','agent','chain'], paths: ['path-ba'], showBadge: 'agent-badge', duration: 2000 },
+  { caption: '⑤ Agent emails "funds held" receipt to the deal thread', activate: ['agent','inbox','buyer','seller'], paths: ['path-ab'], duration: 1800 },
+  { caption: '⑥ Buyer replies in thread: "release escrow kbd-1a2b3c4d"', activate: ['buyer','inbox','agent'], paths: ['path-ba'], duration: 2000 },
+  { caption: '⑦ Agent fetches reply, verifies sender + hashes phrase', activate: ['inbox','agent'], paths: ['path-ba'], duration: 1800 },
+  { caption: '⑧ Buyer approves release — USDC sent to seller on-chain', activate: ['agent','seller','chain'], paths: ['path-as'], showBadge: 'seller-badge', pathClass: 'green', duration: 2200 },
+  { caption: '⑨ Receipt email with tx hash sent to both parties', activate: ['agent','inbox','buyer','seller'], paths: ['path-ab'], duration: 1800 },
+  { caption: '✓ Deal complete — 2 chat prompts + 1 email reply → funds moved on-chain', activate: ['buyer','agent','seller','inbox','chain'], paths: [], duration: 2500 },
+];
+let flowIdx = 0;
+let flowTimer = null;
+let flowPlaying = false;
+
+function flowStep(i) {
+  const step = flowSteps[i];
+  // deactivate all
+  document.querySelectorAll('.flow-node').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.flow-path').forEach(p => { p.classList.remove('active','gold','green'); });
+  ['buyer-badge','agent-badge','seller-badge'].forEach(id => document.getElementById(id).style.display = 'none');
+  // activate
+  step.activate.forEach(id => {
+    const el = document.getElementById('node-' + id);
+    if (el) el.classList.add('active');
+  });
+  step.paths.forEach(pid => {
+    const p = document.getElementById(pid);
+    if (p) { p.classList.add('active'); if (step.pathClass) p.classList.add(step.pathClass); }
+  });
+  if (step.showBadge) document.getElementById(step.showBadge).style.display = 'block';
+  document.getElementById('flow-caption').textContent = step.caption;
+}
+
+function flowNext() {
+  flowStep(flowIdx);
+  flowIdx = (flowIdx + 1) % flowSteps.length;
+}
+
+function flowStart() {
+  flowPlaying = !flowPlaying;
+  const btn = document.getElementById('flow-play');
+  if (flowPlaying) {
+    btn.textContent = '⏸ pause';
+    flowNext();
+    flowTimer = setInterval(flowNext, flowSteps[flowIdx]?.duration || 2000);
+  } else {
+    btn.textContent = '▶ auto-play';
+    clearInterval(flowTimer);
+  }
+}
+
+document.getElementById('flow-play').addEventListener('click', flowStart);
+document.getElementById('flow-restart').addEventListener('click', () => {
+  clearInterval(flowTimer); flowPlaying = false; flowIdx = 0;
+  document.getElementById('flow-play').textContent = '▶ auto-play';
+  flowStep(0);
+});
+
+// init flow at step 0
+flowStep(0);
+
+// ====== TAB 2: Phase explorer ======
+const phases = [
+  { n: 0, name: 'Draft',    title: 'Collect deal envelope', desc: 'Buyer supplies amount, asset, chain, seller wallet, deadline, and release phrase in chat. The agent never infers these from email. A unique deal_id is generated and the deal record is created.', tools: [] },
+  { n: 1, name: 'Probe',    title: 'Confirm PayBox connection', desc: 'The agent calls get_paybox_connection once as the first PayBox action. If ACTIVE, continue. If connect_handoff or OWNER_ACTION_REQUIRED, pause and surface the console URL. Absence from tools/list is NOT "not exposed".', tools: ['get_paybox_connection'] },
+  { n: 2, name: 'Resolve',  title: 'Resolve mailbox + thread', desc: 'List mailboxes, pick the buyer\'s primary mailbox, and resolve thread_id from the seed agreement message. Record mailbox_public_id and thread_id in the deal record.', tools: ['list_mailboxes','get_email_context'] },
+  { n: 3, name: 'Baseline', title: 'Record baseline emails', desc: 'One bounded metadata-only read of the thread. Every returned Mermail email id is recorded as the baseline. Future polls exclude these ids client-side, so the agent never re-processes old emails.', tools: ['search_emails'] },
+  { n: 4, name: 'Fund',     title: 'Funding preview + hold', desc: 'Show the buyer an exact funding preview (amount, asset, chain, wallet, seller, deadline, release phrase). After explicit approval, call paybox_request_transfer to hold funds in the Agent Wallet. Send "funds held" receipt email to the thread.', tools: ['paybox_request_transfer','send_email'], gold: true },
+  { n: 5, name: 'Monitor',  title: 'Poll for release phrase', desc: 'Bounded polling of search_emails (60s interval, max 480 polls). For each new candidate, fetch with get_email, normalise sender, hash each body line, compare to stored release_phrase_hash. Stop on ambiguity, dispute keywords, or deadline.', tools: ['search_emails','get_email'] },
+  { n: 6, name: 'Release',  title: 'Release gate + payout', desc: 'Show exact release preview (deal, amount, from, to, trigger). Require FRESH approval — funding approval ≠ release approval. Call paybox_request_transfer to the seller\'s wallet. Send receipt email with tx hash to both parties.', tools: ['paybox_request_transfer','send_email'], gold: true },
+];
+let phaseIdx = 0;
+let phaseTimer = null;
+let phasePlaying = false;
+
+function renderPhaseGrid() {
+  const grid = document.getElementById('phase-grid');
+  grid.innerHTML = '';
+  phases.forEach(p => {
+    const chip = document.createElement('div');
+    chip.className = 'phase-chip' + (p.n === phaseIdx ? ' active' : '') + (p.n < phaseIdx ? ' done' : '');
+    chip.innerHTML = `<div class="phase-chip-num">${p.n}</div><div class="phase-chip-name">${p.name}</div>`;
+    chip.addEventListener('click', () => { phaseIdx = p.n; stopPhasePlay(); renderPhase(); });
+    grid.appendChild(chip);
+  });
+}
+
+function renderPhase() {
+  renderPhaseGrid();
+  const p = phases[phaseIdx];
+  const detail = document.getElementById('phase-detail');
+  detail.innerHTML = `
+    <div class="flex items-start gap-5 fade-in">
+      <div class="phase-detail-num">${p.n}</div>
+      <div class="flex-1">
+        <div class="text-[10px] mono uppercase tracking-widest" style="color: ${p.gold ? 'var(--gold)' : 'var(--teal-bright)'};">Phase ${p.n} · ${p.name}</div>
+        <div class="phase-detail-title">${p.title}</div>
+        <div class="phase-detail-desc">${p.desc}</div>
+        <div class="phase-tools">
+          ${p.tools.length ? p.tools.map(t => `<span class="phase-tool${p.gold ? ' gold' : ''}">${t}</span>`).join('') : '<span class="text-xs text-[var(--muted)] mono">no MCP calls — chat only</span>'}
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('phase-progress-fill').style.width = ((phaseIdx + 1) / phases.length * 100) + '%';
+}
+
+function stopPhasePlay() {
+  if (phaseTimer) { clearInterval(phaseTimer); phaseTimer = null; }
+  phasePlaying = false;
+  document.getElementById('phase-play').textContent = '▶ auto-play';
+}
+
+function phasePlay() {
+  phasePlaying = !phasePlaying;
+  const btn = document.getElementById('phase-play');
+  if (phasePlaying) {
+    btn.textContent = '⏸ pause';
+    phaseTimer = setInterval(() => {
+      phaseIdx = (phaseIdx + 1) % phases.length;
+      renderPhase();
+    }, 3000);
+  } else {
+    stopPhasePlay();
+  }
+}
+
+document.getElementById('phase-play').addEventListener('click', phasePlay);
+document.getElementById('phase-prev').addEventListener('click', () => { stopPhasePlay(); phaseIdx = (phaseIdx - 1 + phases.length) % phases.length; renderPhase(); });
+document.getElementById('phase-next').addEventListener('click', () => { stopPhasePlay(); phaseIdx = (phaseIdx + 1) % phases.length; renderPhase(); });
+
+renderPhase();
+
+// ====== TAB 3: State machine animation ======
+const statePath = [
+  { state: 'start',    arrow: 'start-draft' },
+  { state: 'draft',    arrow: 'draft-armed' },
+  { state: 'armed',    arrow: 'armed-held' },
+  { state: 'held',     arrow: 'held-released' },
+  { state: 'released', arrow: 'released-end' },
+  { state: 'end',      arrow: null },
+];
+let stateIdx = 0;
+let stateTimer = null;
+let statePlaying = false;
+let stateHovered = false;
+
+function stateStep(i) {
+  document.querySelectorAll('.state-node').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.state-arrow').forEach(a => a.classList.remove('lit'));
+  const seen = new Set();
+  for (let j = 0; j <= i; j++) {
+    const s = statePath[j];
+    if (s.state === 'end') {
+      document.querySelector('[data-state="end"]')?.classList.add('active');
+    } else {
+      const nodes = document.querySelectorAll('[data-state="' + s.state + '"]');
+      nodes.forEach(n => { if (!seen.has(s.state)) { n.classList.add('active'); seen.add(s.state); } });
+    }
+    if (j < i && statePath[j].arrow) {
+      document.querySelector('[data-arrow="' + statePath[j].arrow + '"]')?.classList.add('lit');
+    }
+  }
+}
+
+function stateNext() {
+  if (stateHovered) return;
+  stateStep(stateIdx);
+  stateIdx = (stateIdx + 1) % (statePath.length + 2);
+  if (stateIdx >= statePath.length) stateIdx = 0;
+}
+
+function statePlay() {
+  statePlaying = !statePlaying;
+  const btn = document.getElementById('state-play');
+  if (statePlaying) {
+    btn.textContent = '⏸ pause';
+    stateNext();
+    stateTimer = setInterval(stateNext, 1200);
+  } else {
+    btn.textContent = '▶ play';
+    clearInterval(stateTimer);
+  }
+}
+
+document.getElementById('state-play').addEventListener('click', statePlay);
+document.getElementById('state-reset').addEventListener('click', () => {
+  clearInterval(stateTimer); statePlaying = false; stateIdx = 0;
+  document.getElementById('state-play').textContent = '▶ play';
+  document.querySelectorAll('.state-node').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.state-arrow').forEach(a => a.classList.remove('lit'));
+});
+
+// hover to pause
+document.querySelectorAll('.state-node').forEach(n => {
+  n.addEventListener('mouseenter', () => { stateHovered = true; n.classList.add('active'); });
+  n.addEventListener('mouseleave', () => { stateHovered = false; });
+});
+
+// start the state machine auto-playing
+stateStep(0);
+statePlaying = true;
+document.getElementById('state-play').textContent = '⏸ pause';
+stateTimer = setInterval(stateNext, 1400);
 </script>
 
 </body>
