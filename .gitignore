@@ -216,3 +216,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Demo video source files (keep mp4 + screenshots, ignore webm duplicates)
+docs/demo-video/*.webm
