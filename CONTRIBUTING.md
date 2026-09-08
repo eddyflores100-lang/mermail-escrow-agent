@@ -77,7 +77,7 @@ These mirror the official `AUTHORING.md` in `Nudgen-Marketing/mermail-skills`:
 ## Security reports
 
 **Do not open a public issue for a security vulnerability.** Email
-`security@<your-domain>` or open a private security advisory at
+`security@alicelabs.site` or open a private security advisory at
 <https://github.com/eddyflores100-lang/mermail-escrow-agent/security/advisories/new>.
 
 See [`SECURITY.md`](./SECURITY.md) for the full policy.

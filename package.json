@@ -31,6 +31,10 @@
   "engines": {
     "node": ">=18"
   },
+  "scripts": {
+    "test": "python3 skills/mermail-escrow-agent/scripts/parse_deal.py --format json --text \"I'll pay 50 USDC on BASE to 0x742d35Cc6634C0532925a3b844Bc9e7595f6E321\" | jq -e '.amount_decimal != null' && python3 -m py_compile skills/mermail-escrow-agent/scripts/*.py integrations/*/*.py && test $(wc -l < skills/mermail-escrow-agent/SKILL.md) -le 500 && ! grep -rn 'TODO' skills/mermail-escrow-agent/ && jq -e 'type == \"array\" and length >= 8' tests/scenarios.json > /dev/null && echo 'All checks passed'",
+    "validate:skill": "test $(wc -l < skills/mermail-escrow-agent/SKILL.md) -le 500 && test \"$(basename skills/mermail-escrow-agent)\" = \"$(awk '/^---$/{n++; next} n==1 && /^name:/ {print $2; exit}' skills/mermail-escrow-agent/SKILL.md)\" && grep -q 'Use \\$mermail-escrow-agent' skills/mermail-escrow-agent/agents/openai.yaml && echo 'Skill validation passed'"
+  },
   "files": [
     "skills/",
     "README.md",
@@ -54,6 +58,6 @@
     "ownsNewTools": false,
     "requiresFullProfileOAuth": true,
     "requiresPayBox": true,
-    "officialRepoPr": "https://github.com/Nudgen-Marketing/mermail-skills/pull/PLACEHOLDER"
+    "officialRepoPr": "https://github.com/Nudgen-Marketing/mermail-skills/pulls"
   }
 }

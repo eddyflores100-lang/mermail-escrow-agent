@@ -17,7 +17,7 @@ Please report vulnerabilities via one of:
 
 1. **GitHub private security advisory** (preferred):
    <https://github.com/eddyflores100-lang/mermail-escrow-agent/security/advisories/new>
-2. **Email**: `<your-security-email>` with subject line
+2. **Email**: `security@alicelabs.site` with subject line
    `[SECURITY] mermail-escrow-agent`.
 
 Include:

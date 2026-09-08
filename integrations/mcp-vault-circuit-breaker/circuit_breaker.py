@@ -12,6 +12,16 @@ This integration is OPTIONAL. The MIT core works without it.
 
 Commercial use of this file requires a license from AliceLabs LLC.
 Contact: legal@alicelabs.site
+
+NOTE ON STATE PERSISTENCE (OPS-01):
+    The breaker state is held in-process only (`_breakers` dict). This is
+    adequate for a single agent session, but in a serverless / stateless
+    host (Lambda, Cloudflare Workers, CLI invocations) the state resets
+    on every cold start. For production multi-instance deployments,
+    back `_breakers` with a shared store (Redis, Durable Objects, or
+    Mermail's own mailbox draft as a persistence layer) before relying
+    on it for cross-invocation protection. Thread-safety: if you call
+    `get_breaker()` from concurrent threads, wrap access in a Lock.
 """
 from __future__ import annotations
 
@@ -246,7 +256,10 @@ def with_circuit_breaker(deal_id: str, phase: str) -> Callable:
 
 def main() -> int:
     """Demo: simulate a PayBox that fails 3 times then succeeds."""
-    import random
+    import sys
+    # Force UTF-8 on stdout so the demo does not crash on Windows cp1252.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
 
     print("=== Circuit breaker demo ===\n")
 
@@ -262,14 +275,14 @@ def main() -> int:
         print(f"Attempt {attempt}: state={breaker.state.value}", end="")
         try:
             result = breaker.call(fake_paybox_call, attempt)
-            print(f" → SUCCESS: {result}")
+            print(f" -> SUCCESS: {result}")
         except CircuitOpenError as e:
-            print(f" → CIRCUIT_OPEN: {e}")
+            print(f" -> CIRCUIT_OPEN: {e}")
             time.sleep(1)
         except RuntimeError as e:
-            print(f" → FAILED: {e}")
+            print(f" -> FAILED: {e}")
         except TimeoutError as e:
-            print(f" → TIMEOUT: {e}")
+            print(f" -> TIMEOUT: {e}")
 
         # Show breaker status
         status = breaker.status()

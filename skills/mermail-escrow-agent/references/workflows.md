@@ -77,7 +77,6 @@ unavailable). Never emailed to anyone.
   "created_iso": "2026-09-08T14:00:00Z",
   "mailbox_public_id": "mbx_abc123",
   "thread_id": "thr_xyz789",
-  "release_phrase": "release escrow kbd-1a2b3c4d",
   "release_phrase_hash": "sha256:...",
   "baseline_email_ids": ["eml_001", "eml_002"],
   "state": "HELD",
@@ -95,10 +94,14 @@ unavailable). Never emailed to anyone.
 }
 ```
 
-The `release_phrase_hash` is `sha256(release_phrase)`. The agent stores the
-hash, not the phrase. When matching a buyer reply, the agent hashes each
-candidate line of the reply and compares hashes. This prevents the phrase
-from being persisted in logs that quote the email body.
+The `release_phrase_hash` is `sha256(normalize(release_phrase))` where
+`normalize` applies NFKC Unicode normalization, strips email quote
+prefixes (`> `, `| `, `: `), collapses whitespace, and lowercases (see
+`security.md` Rule 2 for the exact algorithm). The agent stores **only
+the hash**, never the plaintext phrase. When matching a buyer reply, the
+agent normalizes and hashes each candidate line of the reply and compares
+hashes. This prevents the phrase from being persisted in logs or mailbox
+drafts that quote the email body.
 
 ## Phase 0 — Collect deal envelope
 

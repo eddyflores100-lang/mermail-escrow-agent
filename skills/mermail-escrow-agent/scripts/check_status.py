@@ -124,6 +124,10 @@ def _load_from_mailbox(deal_id: str, mailbox_id: str) -> dict:
 
 
 def main() -> int:
+    # Force UTF-8 on stdout for Windows cp1252 compatibility.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--file", help="Local JSON file containing the deal record")
     ap.add_argument("--deal-id", help="Deal id (when reading from mailbox draft)")

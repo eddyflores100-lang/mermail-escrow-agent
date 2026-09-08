@@ -95,15 +95,17 @@ integrations:
     enabled: true
     passphrase: "buyer-supplied secret phrase"  # never logged, never emailed
     kdf_iterations: 310000                       # OWASP 2023 for SHA-256
-    verifier_hash: "sha256(passphrase)"          # stored in deal record for UX check
 ```
 
 The passphrase:
 - Is supplied by the buyer in chat at deal creation
 - Never leaves the agent's process (not logged, not emailed, not persisted in the deal record)
-- Only a `verifier_hash` (sha256 of the passphrase) is stored, so the
-  agent can sanity-check the passphrase on later decryptions without
-  storing the passphrase itself
+- **No verifier hash is stored.** AES-GCM is an authenticated encryption
+  scheme (AEAD): if the passphrase is wrong, the GCM tag verification
+  fails natively and `decrypt_deal_record` raises `DealVaultDecryptError`.
+  Storing a separate unsalted SHA-256 of the passphrase (as earlier
+  versions did) would leak it to rainbow-table attacks and defeat the
+  310,000 PBKDF2 iterations. Trust the AEAD — don't add a weak verifier.
 - If the buyer forgets the passphrase, the deal record is unrecoverable
   (this is the price of zero-knowledge)
 

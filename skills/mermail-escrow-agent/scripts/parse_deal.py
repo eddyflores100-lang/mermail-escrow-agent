@@ -56,30 +56,47 @@ DEAL_ID_RE = re.compile(
 )
 
 
-def _pick_address(text: str) -> Optional[str]:
-    """Return the first plausible wallet address in the text."""
-    m = EVM_ADDR_RE.search(text)
-    if m:
-        return m.group(0)
+def _pick_address(text: str) -> tuple[Optional[str], bool]:
+    """Return (address, ambiguous) from the text.
+
+    - If exactly one EVM (or Solana) address is found, returns (address, False).
+    - If multiple addresses are found, returns (None, True) — the buyer must
+      disambiguate in chat. Returning the first match blindly would let an
+      attacker inject a burn address or a revoked address earlier in the
+      email body and hijack the deal.
+    - If no address is found, returns (None, False).
+    """
+    evm_matches = EVM_ADDR_RE.findall(text)
+    if len(evm_matches) == 1:
+        return evm_matches[0], False
+    if len(evm_matches) > 1:
+        return None, True  # ambiguous — surface to buyer
     # Solana addresses are ambiguous (any 43-44 char base58 string); only
     # accept them if the surrounding text mentions "sol" or "solana".
     if re.search(r"\bsol(?:ana)?\b", text, re.IGNORECASE):
-        m = SOL_ADDR_RE.search(text)
-        if m:
-            return m.group(0)
-    return None
+        sol_matches = SOL_ADDR_RE.findall(text)
+        if len(sol_matches) == 1:
+            return sol_matches[0], False
+        if len(sol_matches) > 1:
+            return None, True
+    return None, False
 
 
 def parse_deal(text: str) -> dict:
     """Parse a deal envelope from free-form email body text.
 
     Returns a dict with keys: amount_decimal, token, chain, destination,
-    deadline_iso, deal_id. Any field that cannot be parsed with high
-    confidence is None.
+    deadline_iso, deal_id, multiple_addresses_found. Any field that cannot
+    be parsed with high confidence is None.
+
+    If multiple wallet addresses are detected in the text, `destination`
+    is None and `multiple_addresses_found` is True — the caller (the agent)
+    must ask the buyer to confirm the intended destination in chat before
+    writing it to the deal record.
     """
     amount_match = AMOUNT_RE.search(text)
     chain_match = CHAIN_RE.search(text)
-    address = _pick_address(text)
+    address, ambiguous = _pick_address(text)
     deadline_match = DEADLINE_RE.search(text)
     deal_id_match = DEAL_ID_RE.search(text)
 
@@ -88,6 +105,7 @@ def parse_deal(text: str) -> dict:
         "token": amount_match.group("token").upper() if amount_match else None,
         "chain": chain_match.group("chain").upper() if chain_match else None,
         "destination": address,
+        "multiple_addresses_found": ambiguous,
         "deadline_iso": deadline_match.group("iso") if deadline_match else None,
         "deal_id": deal_id_match.group("id").lower() if deal_id_match else None,
         # Always None — the buyer's chat instruction is the only source for
@@ -97,6 +115,11 @@ def parse_deal(text: str) -> dict:
 
 
 def main() -> int:
+    # Force UTF-8 on stdout so the script does not crash on Windows cp1252
+    # when the input contains non-ASCII characters.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--file", help="Path to a text file containing the email body")
     ap.add_argument("--text", help="Email body as a command-line argument")
@@ -121,7 +144,10 @@ def main() -> int:
     else:
         print("Parsed deal envelope (SURFACE ONLY — buyer must confirm in chat):")
         for k, v in deal.items():
-            print(f"  {k:>16}: {v if v is not None else '<unparsed>'}")
+            print(f"  {k:>22}: {v if v is not None else '<unparsed>'}")
+        if deal.get("multiple_addresses_found"):
+            print("\n  AMBIGUOUS: multiple wallet addresses detected in the text.")
+            print("  The buyer must confirm the intended destination in chat.")
     return 0
 
 

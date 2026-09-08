@@ -37,7 +37,7 @@ Examples of unacceptable behavior:
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the project maintainers at `conduct@<your-domain>`.
+reported to the project maintainers at `conduct@alicelabs.site`.
 All complaints will be reviewed and investigated promptly and fairly.
 
 See the [Contributor Covenant enforcement guidelines](https://www.contributor-covenant.org/version/2/1/code_of_conduct/enforcement/)

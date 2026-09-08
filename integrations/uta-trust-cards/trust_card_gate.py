@@ -18,17 +18,61 @@ Contact: legal@alicelabs.site
 from __future__ import annotations
 
 import json
+import os
+import shutil
 import subprocess
 import sys
 from dataclasses import dataclass
 from typing import Optional
 
 
-# The agent-trust-card SDK is an NPM package. We shell out to it.
-# If the MCP server (marketnow-mcp) is connected instead, the agent can
-# call its tools directly — this helper is for the non-MCP path.
-ATC_CLI = "npx"
-ATC_CLI_ARGS = ["--yes", "agent-trust-card"]
+# ---- Supply-chain-safe CLI resolution (SEC-02) -------------------------------
+# Earlier versions of this file invoked `npx --yes agent-trust-card` at
+# runtime, which:
+#   1. downloads and executes arbitrary code from the public npm registry
+#      on every call (typosquatting / dependency-confusion risk), and
+#   2. easily exceeds the 10s latency threshold of the circuit breaker,
+#      causing false CircuitOpenError trips.
+#
+# We now resolve the CLI in this order:
+#   (a) $ATC_CLI env var (explicit override — pin a specific binary here)
+#   (b) a locally-installed `agent-trust-card` on PATH (npm i -g agent-trust-card)
+#   (c) ./node_modules/.bin/agent-trust-card (pinned in package-lock.json)
+#   (d) `npx --yes agent-trust-card@<PINNED_VERSION>` — last resort, with a
+#       pinned version to prevent registry-side tampering.
+#
+# Set ATC_ALLOW_NPX=1 to enable the (d) fallback. Without it, missing (a)/(b)/(c)
+# raises RuntimeError instead of falling through to npx.
+
+PINNED_ATC_VERSION = "1.1.1"  # matches agent-trust-card@1.1.1 from the UTA README
+
+
+def _resolve_atc_cli() -> list[str]:
+    """Return the argv prefix for invoking the agent-trust-card CLI safely."""
+    # (a) explicit override
+    override = os.environ.get("ATC_CLI")
+    if override:
+        return [override]
+
+    # (b) global install on PATH
+    if shutil.which("agent-trust-card"):
+        return ["agent-trust-card"]
+
+    # (c) local node_modules
+    local_bin = os.path.join(os.getcwd(), "node_modules", ".bin", "agent-trust-card")
+    if os.path.isfile(local_bin) and os.access(local_bin, os.X_OK):
+        return [local_bin]
+
+    # (d) pinned npx fallback (opt-in only)
+    if os.environ.get("ATC_ALLOW_NPX") == "1":
+        return ["npx", "--yes", f"agent-trust-card@{PINNED_ATC_VERSION}"]
+
+    raise RuntimeError(
+        "agent-trust-card CLI not found. Install it with `npm install -g "
+        f"agent-trust-card@{PINNED_ATC_VERSION}` (recommended) or set the "
+        "ATC_CLI env var to the binary path. To opt into the npx fallback "
+        "(downloads code at runtime — supply-chain risk), set ATC_ALLOW_NPX=1."
+    )
 
 
 @dataclass
@@ -61,7 +105,7 @@ def issue_trust_card(agent_id: str, public_key_pem: str) -> dict:
     # In production this calls the UTA CA endpoint. For development,
     # it can self-sign using the agent-trust-card CLI.
     result = subprocess.run(
-        [ATC_CLI, *ATC_CLI_ARGS, "issue",
+        [*_resolve_atc_cli(), "issue",
          "--agent-id", agent_id,
          "--public-key", public_key_pem,
          "--format", "json"],
@@ -89,7 +133,7 @@ def verify_trust_card(atc_json: dict | str) -> ATCVerification:
         atc_json = json.loads(atc_json)
 
     result = subprocess.run(
-        [ATC_CLI, *ATC_CLI_ARGS, "verify", "--format", "json", "-"],
+        [*_resolve_atc_cli(), "verify", "--format", "json", "-"],
         input=json.dumps(atc_json), capture_output=True, text=True,
         timeout=30, check=False,
     )
@@ -116,7 +160,7 @@ def verify_signature(message: str, signature_b64: str, public_key_pem: str) -> b
     Returns True if the signature is valid.
     """
     result = subprocess.run(
-        [ATC_CLI, *ATC_CLI_ARGS, "verify-sig",
+        [*_resolve_atc_cli(), "verify-sig",
          "--message", message,
          "--signature", signature_b64,
          "--public-key", public_key_pem],
@@ -146,21 +190,39 @@ def check_release_gate(
       - reason: str (if not passed)
     """
     import hashlib
+    import re as _re
+    import unicodedata as _ud
 
     # 1. Email auth (the MIT core already checked this, but re-verify)
     email_auth = sender_authentication_status == "pass"
 
-    # 2. Release phrase hash match (the MIT core also does this)
-    #    The integration re-hashes each line and compares.
+    # 2. Release phrase hash match (SEC-05: normalize before hashing)
+    #    Email clients (Outlook, Gmail, Apple Mail) routinely mutate reply
+    #    bodies: non-breaking spaces (\u00A0), CRLF line endings, automatic
+    #    quote prefixes ("> "), smart quotes, and Unicode normalization
+    #    differences (NFC vs NFD). We normalize each candidate line before
+    #    hashing so the match survives these mutations.
+    def _normalize_for_hash(s: str) -> str:
+        # Unicode NFKC: folds compatibility chars (smart quotes -> ASCII,
+        # fullwidth -> halfwidth, etc.)
+        s = _ud.normalize("NFKC", s)
+        # Strip email quote prefixes: "> ", ">> ", "| ", ": "
+        s = _re.sub(r"^\s*(?:>{1,4}\s*|\|\s*|:\s*)+", "", s)
+        # Collapse all whitespace (including \u00A0, \r, \t) to a single space
+        s = _re.sub(r"\s+", " ", s).strip()
+        # Lowercase for case-insensitive match
+        return s.lower()
+
     phrase_match = False
+    matched_line = None
     for line in buyer_reply_body.splitlines():
-        line = line.strip()
-        if not line:
+        norm = _normalize_for_hash(line)
+        if not norm:
             continue
-        h = hashlib.sha256(line.encode("utf-8")).hexdigest()
+        h = hashlib.sha256(norm.encode("utf-8")).hexdigest()
         if h == release_phrase_hash:
             phrase_match = True
-            matched_line = line
+            matched_line = norm
             break
 
     if not phrase_match:

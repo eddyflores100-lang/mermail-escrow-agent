@@ -94,6 +94,10 @@ def _send_email(
 
 
 def main() -> int:
+    # Force UTF-8 on stdout for Windows cp1252 compatibility.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--mailbox-agent", required=True, help="Agent's Mermail email address")
     ap.add_argument("--buyer", required=True, help="Buyer's email address")

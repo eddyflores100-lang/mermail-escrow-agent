@@ -125,28 +125,6 @@ def decrypt_deal_record(
         raise DealVaultDecryptError(f"decrypted payload is not valid JSON: {e}") from e
 
 
-def passphrase_verifier_hash(passphrase: str) -> str:
-    """A sha256 hash of the passphrase, for UX-level sanity checks.
-
-    This is NOT used for encryption — only to tell the buyer "that's the
-    wrong passphrase" before attempting decryption. It is stored in the
-    deal record plaintext metadata (not the encrypted body).
-    """
-    return "sha256:" + hashlib.sha256(passphrase.encode("utf-8")).hexdigest()
-
-
-def verify_passphrase(passphrase: str, stored_verifier: str) -> bool:
-    """Check a passphrase against a stored verifier hash."""
-    expected = passphrase_verifier_hash(passphrase)
-    # Constant-time comparison
-    if len(expected) != len(stored_verifier):
-        return False
-    result = 0
-    for a, b in zip(expected, stored_verifier):
-        result |= ord(a) ^ ord(b)
-    return result == 0
-
-
 def main() -> int:
     """CLI for testing."""
     import argparse
@@ -161,9 +139,6 @@ def main() -> int:
     p_dec = sub.add_parser("decrypt", help="Decrypt an encrypted payload")
     p_dec.add_argument("--input", required=True, help="Path to base64 payload file")
     p_dec.add_argument("--passphrase", required=True, help="Decryption passphrase")
-
-    p_verify = sub.add_parser("verifier", help="Print the passphrase verifier hash")
-    p_verify.add_argument("--passphrase", required=True)
 
     args = ap.parse_args()
 
@@ -183,10 +158,6 @@ def main() -> int:
             print(f"ERROR: {e}", file=sys.stderr)
             return 1
         print(json.dumps(record, indent=2))
-        return 0
-
-    if args.cmd == "verifier":
-        print(passphrase_verifier_hash(args.passphrase))
         return 0
 
     return 2
