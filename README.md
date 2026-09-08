@@ -15,7 +15,19 @@
 **Skill name:** `mermail-escrow-agent`
 **PR target:** [`Nudgen-Marketing/mermail-skills`](https://github.com/Nudgen-Marketing/mermail-skills)
 **Live demo:** <https://eddyflores100-lang.github.io/mermail-escrow-agent/>
-**License:** MIT
+**License:** Dual — [MIT](./LICENSE) for the skill core (upstream-able), [AL-1.0](./LICENSE-AL-1.0) for the AliceLabs integrations in [`integrations/`](./integrations/). See [`PROPRIETARY.md`](./PROPRIETARY.md) for the file-level license map.
+
+## AliceLabs integrations (defense-in-depth, AL-1.0)
+
+The MIT core is a fully functional escrow skill. The optional `integrations/` layer adds three defense-in-depth mechanisms built on AliceLabs projects:
+
+| Integration | Source project | What it adds |
+| --- | --- | --- |
+| [`integrations/uta-trust-cards/`](./integrations/uta-trust-cards/) | [Universal Trust Adapter](https://github.com/alicelabs-llc/universal-trust-adapter) (marketnow.site) | Ed25519 Agent Trust Cards for buyer + seller identity — release gate requires a cryptographic signature on top of email `sender_authentication` |
+| [`integrations/boveda-deal-vault/`](./integrations/boveda-deal-vault/) | [BÓVEDA](https://github.com/eddyflores100-lang/boveda) | PBKDF2-SHA256 (310k) + AES-GCM 256 encryption of the deal record at rest — zero-knowledge to Mermail |
+| [`integrations/mcp-vault-circuit-breaker/`](./integrations/mcp-vault-circuit-breaker/) | [mcp-vault-server](https://github.com/alicelabs-llc/mcp-vault-server) | Circuit breaker around every `paybox_request_transfer` call + IAM labels for granular audit |
+
+The integrations are **optional and composable** — a builder can install only the MIT core, or add any combination. They are governed by [AL-1.0](./LICENSE-AL-1.0) (AliceLabs Source-Available License); commercial use requires a license from AliceLabs LLC. See [`PROPRIETARY.md`](./PROPRIETARY.md) for the full strategy.
 
 ---
 
